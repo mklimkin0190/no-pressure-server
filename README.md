@@ -4,21 +4,40 @@ Server for No Pressure.
 
 ## Requirements
 
-- Node.js 20.11 or higher
-- PostgreSQL 13 or higher
+- Node.js 24.14.1 or higher
+- PostgreSQL 15 or higher
 
-## Setup
+## Running in Docker
+
+```bash
+docker-compose up --build -d
+```
+
+Test connection:
+
+```bash
+curl http://localhost:3000
+```
+
+## Local dev setup
+
+Consider using [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script) to manage Node versions.
+
+```bash
+nvm install 24
+```
 
 Install dependencies:
 
 ```bash
 npm install
+createdb nopressure # Creates the DB owned by your current user by default
 ```
 
 Create a `.env` file in the project root and set your database connection string:
 
 ```env
-DATABASE_URL=postgres://user:password@localhost:5432/no-pressure
+DATABASE_URL=postgres://user:password@localhost:5432/nopressure
 ```
 
 ## Running locally
