@@ -1,22 +1,31 @@
 import Fastify from 'fastify';
 import { Pool } from 'pg';
+import { registerBPReadingRoutes } from './routes/bpReadings';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = Fastify();
-
-require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-app.get('/', async (req, res) => {
+app.get('/', async (_, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
     return { rows: result.rows };
   } catch (err) {
     console.error(err);
-    res.status(500).send('Database error');
+    return res.status(500).send('Database error');
   }
 });
 
-app.listen({ port: 3000 });
+registerBPReadingRoutes(app, pool);
+
+app.listen({ port: 3000 }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server listening at ${address}`);
+});
