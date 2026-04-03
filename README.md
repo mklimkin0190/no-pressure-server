@@ -53,6 +53,134 @@ npm run migrate:create <migration-name>
 
 Then edit the generated file in `migrations/` to define the migration steps.
 
+## API Endpoints
+
+All endpoints are served on `http://localhost:3000`.
+
+### Health check
+
+**`GET /`**
+Returns the current database time. Used to verify the server and database connection are working.
+
+---
+
+### Blood pressure readings
+
+**`GET /bpreadings`**
+Returns all blood pressure readings for the current user, ordered by time descending.
+
+Response:
+
+```json
+{
+  "readings": [
+    {
+      "id": 1,
+      "user_id": "test_user_id",
+      "sys": 120,
+      "dia": 80,
+      "time": "2024-01-01T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+**`GET /bpreading/:id`**
+Returns a single blood pressure reading by ID.
+
+Response:
+
+```json
+{
+  "reading": {
+    "id": 1,
+    "user_id": "test_user_id",
+    "sys": 120,
+    "dia": 80,
+    "time": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+**`POST /bpreading`**
+Creates a new blood pressure reading.
+
+Request body:
+
+```json
+{
+  "sys": 120,
+  "dia": 80
+}
+```
+
+Constraints: `sys` must be between 1 and 300, `dia` between 1 and 200.
+
+Response:
+
+```json
+{
+  "reading": {
+    "id": 1,
+    "user_id": "test_user_id",
+    "sys": 120,
+    "dia": 80,
+    "time": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+**`PUT /bpreading/:id`**
+Updates an existing blood pressure reading by ID.
+
+Request body:
+
+```json
+{
+  "sys": 125,
+  "dia": 85
+}
+```
+
+Constraints: same as POST.
+
+Response:
+
+```json
+{
+  "reading": {
+    "id": 1,
+    "user_id": "test_user_id",
+    "sys": 125,
+    "dia": 85,
+    "time": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+**`DELETE /bpreading/:id`**
+Deletes a blood pressure reading by ID.
+
+Response:
+
+```json
+{
+  "message": "Reading deleted"
+}
+```
+
+---
+
+All endpoints return `404` if a reading is not found, and `500` on a database error.
+
 ## Project structure
 
 ```
