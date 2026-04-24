@@ -1,0 +1,59 @@
+name: Deploy No Pressure Server to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_TARGET: "/opt/${{ github.event.repository.name }}"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          source: "."
+          target: "${{ env.DEPLOY_TARGET }}"
+
+      - name: Write deploy env file
+        uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_TARGET: ${{ env.DEPLOY_TARGET }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DOMAIN: ${{ vars.DOMAIN }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          envs: DEPLOY_TARGET,DB_NAME,DB_USER,DB_PASS,DOMAIN
+          script: |
+            cd "$DEPLOY_TARGET"
+            envsubst < .env.prod.template > .env.prod
+
+      - name: Pull, Build and Run services
+        uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_TARGET: ${{ env.DEPLOY_TARGET }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          envs: DEPLOY_TARGET
+          script: |
+            cd "$DEPLOY_TARGET"
+            docker compose -f docker-compose-prod.yml --env-file .env.prod pull
+            docker compose -f docker-compose-prod.yml --env-file .env.prod build
+            docker compose -f docker-compose-prod.yml --env-file .env.prod up -d
