@@ -2,6 +2,19 @@
 
 Server for No Pressure.
 
+## Production deploy (VPS, Tagmate-style)
+
+Deploy flow:
+
+1. Copies repo to `/opt/<repo-name>` on VPS.
+2. Renders `.env.prod` from `.env.prod.template`.
+3. Runs `docker compose -f docker-compose-prod.yml --env-file .env.prod up -d`.
+
+Traefik routing is configured for:
+
+- Host: `nopressure.${DOMAIN}`
+- API path: `/api` (prefix stripped before forwarding to Fastify)
+
 ## Requirements
 
 - Node.js 24.14.1 or higher
