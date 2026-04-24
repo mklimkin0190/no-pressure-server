@@ -1,0 +1,51 @@
+networks:
+  traefik:
+    external: true
+    name: traefik
+  internal:
+    external: false
+
+volumes:
+  nopressure-db-data:
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - nopressure-db-data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  no-pressure-server:
+    image: no-pressure-server:local
+    build:
+      context: .
+    depends_on:
+      - db
+    restart: always
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+      PORT: 3000
+      HOST: 0.0.0.0
+    command: >
+      sh -c "
+        npm run migrate:up &&
+        node dist/src/app.js
+      "
+    networks:
+      - traefik
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.no-pressure-server.loadbalancer.server.port=3000"
+      - "traefik.http.routers.no-pressure-server-secure.rule=Host(`nopressure.${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.no-pressure-server-secure.entrypoints=websecure"
+      - "traefik.http.routers.no-pressure-server-secure.tls.certresolver=le"
+      - "traefik.http.routers.no-pressure-server-secure.priority=100"
+      - "traefik.http.routers.no-pressure-server-secure.middlewares=no-pressure-server-strip-api,restricted-ips@file"
+      - "traefik.http.middlewares.no-pressure-server-strip-api.stripprefix.prefixes=/api"
