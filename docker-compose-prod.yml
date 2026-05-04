@@ -29,7 +29,11 @@ services:
       - db
     restart: always
     environment:
-      DATABASE_URL: postgres://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASS}
       PORT: 3000
       HOST: 0.0.0.0
     command: >

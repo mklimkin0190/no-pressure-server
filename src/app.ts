@@ -8,9 +8,7 @@ const app = Fastify();
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+const pool = new Pool();
 
 app.get('/', async (_, res) => {
   try {
