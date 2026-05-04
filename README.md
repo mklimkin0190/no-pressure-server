@@ -50,7 +50,11 @@ createdb nopressure # Creates the DB owned by your current user by default
 Create a `.env` file in the project root and set your database connection string:
 
 ```env
-DATABASE_URL=postgres://user:password@localhost:5432/nopressure
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=nopressure
+PGUSER=user
+PGPASSWORD=password
 ```
 
 ## Running locally
