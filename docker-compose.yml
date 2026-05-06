@@ -4,9 +4,9 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nopressure
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
+      POSTGRES_DB: ${PGDATABASE:-nopressure}
     ports:
       - "5432:5432"
     volumes:
@@ -21,10 +21,14 @@ services:
       - "3000:3000"
     environment:
       PGHOST: db
-      PGPORT: 5432
-      PGDATABASE: nopressure
-      PGUSER: postgres
-      PGPASSWORD: postgres
+      PGPORT: ${PGPORT:-5432}
+      PGDATABASE: ${PGDATABASE:-nopressure}
+      PGUSER: ${PGUSER:-postgres}
+      PGPASSWORD: ${PGPASSWORD:-postgres}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:5173}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     command: >
       sh -c "
         npm run migrate:up &&
