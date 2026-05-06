@@ -10,6 +10,11 @@ Deploy flow:
 2. Renders `.env.prod` from `.env.prod.template`.
 3. Runs `docker compose -f docker-compose-prod.yml --env-file .env.prod up -d`.
 
+Required deploy inputs:
+
+- Repository secrets: `DB_NAME`, `DB_USER`, `DB_PASS`, `SESSION_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_SSH_PASSPHRASE` (optional)
+- Repository variables: `DOMAIN`, `APP_ORIGIN`
+
 Traefik routing is configured for:
 
 - Host: `nopressure.${DOMAIN}`
@@ -55,6 +60,10 @@ PGPORT=5432
 PGDATABASE=nopressure
 PGUSER=user
 PGPASSWORD=password
+APP_ORIGIN=http://localhost:5173
+SESSION_SECRET=replace-me
+GOOGLE_CLIENT_ID=replace-me
+GOOGLE_CLIENT_SECRET=replace-me
 ```
 
 ## Running locally
@@ -93,6 +102,24 @@ Then edit the generated file in `migrations/` to define the migration steps.
 
 All endpoints are served on `http://localhost:3000`.
 
+## Authentication
+
+The server uses Google OAuth with an httpOnly session cookie.
+
+Required environment variables for production:
+
+- `APP_ORIGIN`
+- `SESSION_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+
+Auth endpoints:
+
+- `GET /auth/session`
+- `GET /auth/google/start`
+- `GET /auth/google/callback`
+- `POST /auth/logout`
+
 ### Health check
 
 **`GET /`**
@@ -112,7 +139,7 @@ Response:
   "readings": [
     {
       "id": 1,
-      "user_id": "test_user_id",
+      "user_id": "google:1234567890",
       "sys": 120,
       "dia": 80,
       "time": "2024-01-01T12:00:00.000Z"
@@ -132,7 +159,7 @@ Response:
 {
   "reading": {
     "id": 1,
-    "user_id": "test_user_id",
+    "user_id": "google:1234567890",
     "sys": 120,
     "dia": 80,
     "time": "2024-01-01T12:00:00.000Z"
@@ -150,11 +177,12 @@ Request body:
 ```json
 {
   "sys": 120,
-  "dia": 80
+  "dia": 80,
+  "time": "2024-01-01T12:00:00.000Z"
 }
 ```
 
-Constraints: `sys` must be between 1 and 300, `dia` between 1 and 200.
+Constraints: `sys` must be between 1 and 300, `dia` between 1 and 200. `time` is optional.
 
 Response:
 
@@ -162,7 +190,7 @@ Response:
 {
   "reading": {
     "id": 1,
-    "user_id": "test_user_id",
+    "user_id": "google:1234567890",
     "sys": 120,
     "dia": 80,
     "time": "2024-01-01T12:00:00.000Z"
@@ -180,7 +208,8 @@ Request body:
 ```json
 {
   "sys": 125,
-  "dia": 85
+  "dia": 85,
+  "time": "2024-01-01T13:00:00.000Z"
 }
 ```
 
@@ -192,10 +221,10 @@ Response:
 {
   "reading": {
     "id": 1,
-    "user_id": "test_user_id",
+    "user_id": "google:1234567890",
     "sys": 125,
     "dia": 85,
-    "time": "2024-01-01T12:00:00.000Z"
+    "time": "2024-01-01T13:00:00.000Z"
   }
 }
 ```
