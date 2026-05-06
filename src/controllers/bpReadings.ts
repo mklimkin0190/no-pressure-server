@@ -1,12 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Pool } from 'pg';
 import { BPReadingRequestBody, BPReadingRequestParams } from '../types';
+import { getSession } from '../lib/session';
 
-const TEST_USER_ID = "test_user_id";
 export const createHandlers = (pool: Pool) => ({
-  getAll: async (_: FastifyRequest, res: FastifyReply) => {
+  getAll: async (req: FastifyRequest, res: FastifyReply) => {
+    const session = getSession(req);
+    if (!session?.user) {
+      return res.status(401).send('Unauthorized');
+    }
     try {
-      const result = await pool.query('SELECT * FROM bp_readings WHERE user_id = $1 ORDER BY time DESC', [TEST_USER_ID]);
+      const result = await pool.query('SELECT * FROM bp_readings WHERE user_id = $1 ORDER BY time DESC', [session.user.id]);
       return { readings: result.rows };
     } catch (err) {
       console.error(err);
@@ -14,11 +18,15 @@ export const createHandlers = (pool: Pool) => ({
     }
   },
   getById: async (req: FastifyRequest<{ Params: BPReadingRequestParams }>, res: FastifyReply) => {
+    const session = getSession(req);
+    if (!session?.user) {
+      return res.status(401).send('Unauthorized');
+    }
     const { id } = req.params;
     try {
       const result = await pool.query(
         'SELECT * FROM bp_readings WHERE id = $1 AND user_id = $2',
-        [id, TEST_USER_ID]
+        [id, session.user.id]
       );
       if (result.rows.length === 0) {
         return res.status(404).send('Reading not found');
@@ -30,12 +38,15 @@ export const createHandlers = (pool: Pool) => ({
     }
   },
   create: async (req: FastifyRequest<{ Body: BPReadingRequestBody }>, res: FastifyReply) => {
-    console.log('Received request to create BP reading:', req.body);
-    const { sys, dia } = req.body;
+    const session = getSession(req);
+    if (!session?.user) {
+      return res.status(401).send('Unauthorized');
+    }
+    const { sys, dia, time } = req.body;
     try {
       const result = await pool.query(
-        'INSERT INTO bp_readings (sys, dia, user_id) VALUES ($1, $2, $3) RETURNING *',
-        [sys, dia, TEST_USER_ID]
+        'INSERT INTO bp_readings (sys, dia, time, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
+        [sys, dia, time ? new Date(time) : new Date(), session.user.id]
       );
       return { reading: result.rows[0] };
     } catch (err) {
@@ -45,13 +56,16 @@ export const createHandlers = (pool: Pool) => ({
 
   },
   update: async (req: FastifyRequest<{ Params: BPReadingRequestParams; Body: BPReadingRequestBody }>, res: FastifyReply) => {
-    console.log('Received request to update BP reading with id:', req.params.id, req.body);
-    const { sys, dia } = req.body;
+    const session = getSession(req);
+    if (!session?.user) {
+      return res.status(401).send('Unauthorized');
+    }
+    const { sys, dia, time } = req.body;
     const { id } = req.params;
     try {
       const result = await pool.query(
-        'UPDATE bp_readings SET sys = $1, dia = $2 WHERE id = $3 AND user_id = $4 RETURNING *',
-        [sys, dia, id, TEST_USER_ID]
+        'UPDATE bp_readings SET sys = $1, dia = $2, time = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
+        [sys, dia, time ? new Date(time) : new Date(), id, session.user.id]
       );
       if (result.rows.length === 0) {
         return res.status(404).send('Reading not found');
@@ -63,12 +77,15 @@ export const createHandlers = (pool: Pool) => ({
     }
   },
   delete: async (req: FastifyRequest<{ Params: BPReadingRequestParams }>, res: FastifyReply) => {
-    console.log('Received request to delete BP reading with id:', req.params.id);
+    const session = getSession(req);
+    if (!session?.user) {
+      return res.status(401).send('Unauthorized');
+    }
     const { id } = req.params;
     try {
       const result = await pool.query(
         'DELETE FROM bp_readings WHERE id = $1 AND user_id = $2 RETURNING *',
-        [id, TEST_USER_ID]
+        [id, session.user.id]
       );
       if (result.rows.length === 0) {
         return res.status(404).send('Reading not found');
