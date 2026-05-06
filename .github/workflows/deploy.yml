@@ -35,12 +35,16 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DOMAIN: ${{ vars.DOMAIN }}
+          APP_ORIGIN: ${{ vars.APP_ORIGIN }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
-          envs: DEPLOY_TARGET,DB_NAME,DB_USER,DB_PASS,DOMAIN
+          envs: DEPLOY_TARGET,DB_NAME,DB_USER,DB_PASS,DOMAIN,APP_ORIGIN,SESSION_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
           script: |
             cd "$DEPLOY_TARGET"
             envsubst < .env.prod.template > .env.prod
