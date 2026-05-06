@@ -37,26 +37,13 @@ Test connection:
 curl http://localhost:3000
 ```
 
+On first start, the Postgres container creates the database from the `PGUSER`, `PGPASSWORD`, and `PGDATABASE` values in `.env`. The app container runs `npm run migrate:up` before starting the server.
+
 ## Local dev setup
 
-Consider using [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script) to manage Node versions.
-
-```bash
-nvm install 24
-```
-
-Install dependencies:
-
-```bash
-npm install
-createdb nopressure # Creates the DB owned by your current user by default
-```
-
-Create a `.env` file in the project root and set your database connection string:
+Create a `.env` file in the project root:
 
 ```env
-PGHOST=localhost
-PGPORT=5432
 PGDATABASE=nopressure
 PGUSER=user
 PGPASSWORD=password
@@ -66,13 +53,13 @@ GOOGLE_CLIENT_ID=replace-me
 GOOGLE_CLIENT_SECRET=replace-me
 ```
 
-## Running locally
+`PGHOST` and `PGPORT` are set by `docker-compose.yml` inside the app container.
+
+Then run the stack with Docker:
 
 ```bash
-npm run dev
+docker-compose up --build -d
 ```
-
-This starts the server with `ts-node-dev`, which watches for file changes and restarts automatically.
 
 ## Migrations
 
@@ -97,6 +84,8 @@ npm run migrate:create <migration-name>
 ```
 
 Then edit the generated file in `migrations/` to define the migration steps.
+
+Create a new migration when the database schema changes: new tables, new columns, renamed columns or tables, indexes, constraints, or foreign keys. Do not create a migration for auth/env-only changes.
 
 ## API Endpoints
 
