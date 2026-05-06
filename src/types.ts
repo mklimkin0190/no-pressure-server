@@ -9,6 +9,18 @@ export type BPReading = {
 export type BPReadingRequestBody = {
   sys: number;
   dia: number;
+  time?: string;
+};
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string | null;
+};
+
+export type AuthSession = {
+  user: AuthUser | null;
 };
 
 export type BPReadingRequestParams = {
@@ -23,6 +35,7 @@ export const BPReadingRequestSchema = {
       properties: {
         sys: { type: 'integer', minimum: 1, maximum: 300 },
         dia: { type: 'integer', minimum: 1, maximum: 200 },
+        time: { type: 'string' },
       },
       additionalProperties: false,
     },
@@ -39,4 +52,3 @@ export const IdParamRequestSchema = {
     },
   },
 };
-
