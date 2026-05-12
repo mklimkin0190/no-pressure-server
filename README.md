@@ -118,6 +118,8 @@ Returns the current database time. Used to verify the server and database connec
 
 ### Blood pressure readings
 
+Reading times are stored in UTC in the database and returned as ISO-8601 timestamps.
+
 **`GET /bpreadings`**
 Returns all blood pressure readings for the current user, ordered by time descending.
 
