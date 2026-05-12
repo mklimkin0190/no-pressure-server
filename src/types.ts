@@ -35,7 +35,7 @@ export const BPReadingRequestSchema = {
       properties: {
         sys: { type: 'integer', minimum: 1, maximum: 300 },
         dia: { type: 'integer', minimum: 1, maximum: 200 },
-        time: { type: 'string' },
+        time: { type: 'string', format: 'date-time' },
       },
       additionalProperties: false,
     },
