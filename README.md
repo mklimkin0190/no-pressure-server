@@ -97,7 +97,7 @@ The server uses Google OAuth with an httpOnly session cookie.
 
 Required environment variables for production:
 
-- `APP_ORIGIN`
+- `APP_ORIGIN` - full origin, for example `https://nopressure.seriouspavel.com`
 - `SESSION_SECRET`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
