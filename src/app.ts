@@ -47,10 +47,34 @@ app.get('/', async (_, res) => {
 registerAuthRoutes(app);
 registerBPReadingRoutes(app, pool);
 
-app.listen({ port: PORT, host: HOST }, (err, address) => {
-  if (err) {
+const logAppliedMigrations = async () => {
+  try {
+    const result = await pool.query<{ name: string }>(
+      'SELECT name FROM pgmigrations ORDER BY run_on ASC, id ASC limit 7'
+    );
+    const names = result.rows.map(({ name }) => name);
+
+    if (names.length === 0) {
+      console.log('Database migration history: empty');
+      return;
+    }
+
+    console.log('Database migration history (last 7):');
+    names.forEach((name) => console.log(`- ${name}`));
+  } catch (err) {
+    console.error('Failed to load migration history');
     console.error(err);
-    process.exit(1);
   }
+};
+
+const start = async () => {
+  await logAppliedMigrations();
+
+  const address = await app.listen({ port: PORT, host: HOST });
   console.log(`Server listening at ${address}`);
+};
+
+start().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
