@@ -39,6 +39,13 @@ curl http://localhost:3000
 
 On first start, the Postgres container creates the database from the `PGUSER`, `PGPASSWORD`, and `PGDATABASE` values in `.env`. The app container runs `npm run migrate:up` before starting the server.
 
+Typical dev loop:
+
+- first start, code changes, or dependency changes: `docker-compose up -d --build`
+- env-only changes: `docker-compose up -d`
+- after adding a migration: `docker-compose up -d --build`
+- if you want to reset local data: `docker-compose down -v` (the volumes will be deleted)
+
 ## Local dev setup
 
 Create a `.env` file in the project root:
@@ -117,6 +124,8 @@ Returns the current database time. Used to verify the server and database connec
 ---
 
 ### Blood pressure readings
+
+Reading times are stored in UTC in the database and returned as ISO-8601 timestamps.
 
 **`GET /bpreadings`**
 Returns all blood pressure readings for the current user, ordered by time descending.
