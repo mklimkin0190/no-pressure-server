@@ -1,0 +1,5 @@
+services:
+  db:
+    restart: unless-stopped
+  app:
+    restart: unless-stopped

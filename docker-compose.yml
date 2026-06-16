@@ -2,7 +2,6 @@ services:
   db:
     image: postgres:15
     container_name: postgres_db
-    restart: always
     environment:
       POSTGRES_USER: ${PGUSER:-postgres}
       POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
