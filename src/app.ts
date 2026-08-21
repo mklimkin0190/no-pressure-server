@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { Pool } from 'pg';
 import { registerBPReadingRoutes } from './routes/bpReadings';
 import { registerAuthRoutes } from './routes/auth';
+import { validateSessionConfig } from './lib/session';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -68,6 +69,7 @@ const logAppliedMigrations = async () => {
 };
 
 const start = async () => {
+  validateSessionConfig();
   await logAppliedMigrations();
 
   const address = await app.listen({ port: PORT, host: HOST });

@@ -4,8 +4,23 @@ import type { AuthSession, AuthUser } from '../types';
 
 const COOKIE_NAME = 'no_pressure_session';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+const MIN_PRODUCTION_SECRET_BYTES = 32;
 
-const getSecret = () => process.env.SESSION_SECRET || 'dev-session-secret';
+export const validateSessionConfig = () => {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || Buffer.byteLength(secret, 'utf8') < MIN_PRODUCTION_SECRET_BYTES) {
+    throw new Error(
+      `SESSION_SECRET must contain at least ${MIN_PRODUCTION_SECRET_BYTES} bytes in production`
+    );
+  }
+};
+
+const getSecret = () => {
+  validateSessionConfig();
+  return process.env.SESSION_SECRET || 'dev-session-secret';
+};
 
 const base64UrlEncode = (value: string) => Buffer.from(value).toString('base64url');
 
